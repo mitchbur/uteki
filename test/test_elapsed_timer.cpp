@@ -33,9 +33,6 @@ using namespace std::chrono_literals;
 
 class Test_elapsed_timer : public ::testing::Test
 {
-public:
-	using timer_type = uteki::elapsed_timer<>;
-
 protected:
 
 	Test_elapsed_timer()
@@ -66,31 +63,25 @@ protected:
 	}
 
 public:
+    template<typename CT>
+    uteki::elapsed_timer<CT> echo( uteki::elapsed_timer<CT> a )
+    {
+        return a;
+    }
 
-	static unsigned long test_loop_count( std::chrono::duration<double>& loop_time )
-	{
-		timer_type my_timer;
-		unsigned long loops = 0;
-		for ( unsigned long k = 0; k < 1E9; ++k )
-		{
-			if ( my_timer.value() >= loop_time )
-			{
-				loops = k;
-				break;
-			}
-		}
-		return loops;
-	}
 };
 
-// std::this_thread::sleep_for(2000ms);
-
-TEST_F( Test_elapsed_timer, construction )
+TEST_F( Test_elapsed_timer, default_constructor )
 {
-	std::chrono::duration<double> sleep1_duration = 300ms;
-	std::chrono::duration<double> sleep2_duration = 600ms;
+    using timer_type_dc = uteki::elapsed_timer<>;
 
-	uteki::elapsed_timer<> my_timer;
+    std::chrono::duration<double> sleep1_duration = 300ms;
+    std::chrono::duration<double> sleep2_duration = 600ms;
+
+    timer_type_dc my_timer;
+
+    EXPECT_TRUE( my_timer.is_running() );
+
 	std::this_thread::sleep_for( sleep1_duration );
 	decltype(sleep1_duration) elapsed_1 = my_timer.value();
 	std::this_thread::sleep_for( sleep2_duration );
@@ -102,12 +93,129 @@ TEST_F( Test_elapsed_timer, construction )
     EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
 }
 
-TEST_F( Test_elapsed_timer, construction_b )
+TEST_F( Test_elapsed_timer, copy_constructor )
 {
-	std::chrono::duration<double> sleep1_duration = 300ms;
-	std::chrono::duration<double> sleep2_duration = 600ms;
+    using timer_type_cc = uteki::elapsed_timer<>;
 
-	uteki::elapsed_timer< std::chrono::high_resolution_clock > my_timer;
+    {
+        std::atomic< timer_type_cc::duration > my_duration;
+        bool duration_is_lock_free = my_duration.is_lock_free();
+
+        std::cout << "elapsed_timer<>::duration lock free: " <<
+            ( duration_is_lock_free ? "true" : "false" ) << "\n";
+    }
+
+    std::chrono::duration<double> sleep1_duration = 150ms;
+    std::chrono::duration<double> sleep2_duration = 300ms;
+
+    timer_type_cc my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep1_duration );
+    decltype(sleep1_duration) elapsed_1 = my_timer.value();
+
+    timer_type_cc other_timer( my_timer );
+    EXPECT_TRUE( my_timer.is_running() );
+    EXPECT_TRUE( other_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep2_duration );
+    decltype(sleep1_duration) elapsed_1_2 = other_timer.value();
+
+    auto expected_elapsed_1 = sleep1_duration;
+    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), 6E-3 );
+    auto expected_elapsed_1_2 = sleep1_duration + sleep2_duration;
+    EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
+}
+
+TEST_F( Test_elapsed_timer, move_constructor )
+{
+    using timer_type_cc = uteki::elapsed_timer<>;
+
+    std::chrono::duration<double> sleep1_duration = 150ms;
+    std::chrono::duration<double> sleep2_duration = 300ms;
+
+    timer_type_cc my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep1_duration );
+    decltype(sleep1_duration) elapsed_1 = my_timer.value();
+
+    timer_type_cc other_timer( std::move( my_timer ) );
+    EXPECT_TRUE( my_timer.is_running() );
+    EXPECT_TRUE( other_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep2_duration );
+    decltype(sleep1_duration) elapsed_1_2 = other_timer.value();
+
+    auto expected_elapsed_1 = sleep1_duration;
+    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), 6E-3 );
+    auto expected_elapsed_1_2 = sleep1_duration + sleep2_duration;
+    EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
+}
+
+TEST_F( Test_elapsed_timer, copy_assignment )
+{
+    using timer_type_ca = uteki::elapsed_timer<>;
+
+    std::chrono::duration<double> sleep1_duration = 150ms;
+    std::chrono::duration<double> sleep2_duration = 300ms;
+
+    timer_type_ca my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep1_duration );
+    decltype(sleep1_duration) elapsed_1 = my_timer.value();
+
+    timer_type_ca other_timer;
+    other_timer = my_timer;
+    EXPECT_TRUE( other_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep2_duration );
+    decltype(sleep1_duration) elapsed_1_2 = my_timer.value();
+    decltype(sleep1_duration) elapsed_1_2_2nd = other_timer.value();
+
+    auto expected_elapsed_1 = sleep1_duration;
+    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), 6E-3 );
+    auto expected_elapsed_1_2 = sleep1_duration + sleep2_duration;
+    EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
+    auto expected_elapsed_1_2_2nd = sleep1_duration + sleep2_duration;
+    EXPECT_NEAR( elapsed_1_2_2nd.count(), expected_elapsed_1_2_2nd.count(), 12E-3 );
+}
+
+TEST_F( Test_elapsed_timer, move_assignment )
+{
+    using timer_type_ma = uteki::elapsed_timer<>;
+
+    std::chrono::duration<double> sleep1_duration = 270ms;
+    std::chrono::duration<double> sleep2_duration = 130ms;
+
+    timer_type_ma my_timer;
+    std::this_thread::sleep_for( sleep1_duration );
+    decltype(sleep1_duration) elapsed_1 = my_timer.value();
+
+    timer_type_ma other_timer;
+    other_timer = std::move( my_timer );
+    EXPECT_TRUE( other_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep2_duration );
+    decltype(sleep1_duration) elapsed_1_2 = other_timer.value();
+
+    auto expected_elapsed_1 = sleep1_duration;
+    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), 6E-3 );
+    auto expected_elapsed_1_2 = sleep1_duration + sleep2_duration;
+    EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
+}
+
+TEST_F( Test_elapsed_timer, construction_highres )
+{
+    using timer_type_c_hr = uteki::elapsed_timer< std::chrono::high_resolution_clock >;
+
+	std::chrono::duration<double> sleep1_duration = 320ms;
+	std::chrono::duration<double> sleep2_duration = 240ms;
+
+    timer_type_c_hr my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
+
 	std::this_thread::sleep_for( sleep1_duration );
 	decltype(sleep1_duration) elapsed_1 = my_timer.value();
 	std::this_thread::sleep_for( sleep2_duration );
@@ -119,26 +227,52 @@ TEST_F( Test_elapsed_timer, construction_b )
 	EXPECT_NEAR( elapsed_1_2.count(), expected_elapsed_1_2.count(), 12E-3 );
 }
 
-TEST_F( Test_elapsed_timer, BasicTiming )
+TEST_F( Test_elapsed_timer, restart )
 {
+    using timer_type_dc = uteki::elapsed_timer<>;
+
+    std::chrono::duration<double> sleep1_duration = 230ms;
+    std::chrono::duration<double> sleep2_duration = 120ms;
+
+    timer_type_dc my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep1_duration );
+    decltype(sleep1_duration) elapsed_1 = my_timer.value();
+
+    my_timer.restart();
+    EXPECT_TRUE( my_timer.is_running() );
+
+    std::this_thread::sleep_for( sleep2_duration );
+    decltype(sleep1_duration) elapsed_2 = my_timer.value();
+
+    auto expected_elapsed_1 = sleep1_duration;
+    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), 6E-3 );
+    auto expected_elapsed_2 = sleep2_duration;
+    EXPECT_NEAR( elapsed_2.count(), expected_elapsed_2.count(), 6E-3 );
+}
+
+TEST_F( Test_elapsed_timer, timing )
+{
+    using timer_type_tm = uteki::elapsed_timer<>;
 	{
-		std::chrono::steady_clock::period clk_period;
+        timer_type_tm::period clk_period;
 		std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
 	}
 
-	std::chrono::duration<double> step_interval = 666666666.6666667ns;
+    timer_type_tm my_timer;
+    EXPECT_TRUE( my_timer.is_running() );
 
-	std::cout << "tribble( ~ns, ~loops";
-	for ( std::chrono::duration<double> test_time = 1s;
-		 test_time <= 3s; test_time += step_interval )
+	std::chrono::duration<double> step_interval = 125ms;
+
+    auto prev_val = timer_type_tm::duration::zero();
+    for ( int k = 0; k < 5; ++k )
 	{
-		auto loop_count = test_loop_count( test_time );
-
-		std::cout << ",\n" <<
-		std::chrono::duration_cast<std::chrono::nanoseconds>(test_time).count() <<
-		", " << loop_count;
+        std::this_thread::sleep_for( step_interval );
+        auto curr_val = my_timer.value();
+        EXPECT_TRUE( my_timer.is_running() );
+        auto val_diff = std::chrono::duration_cast< std::chrono::duration<double> >( curr_val - prev_val );
+        prev_val = curr_val;
+        EXPECT_NEAR( val_diff.count(), step_interval.count(), 6E-3 );
 	}
-	std::cout << " )" << "\n";
-
-	// EXPECT_NEAR( outside_elapsed.count(), accum_duration.count(), 1E-3 );
 }

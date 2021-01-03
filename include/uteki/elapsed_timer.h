@@ -25,6 +25,7 @@
 #ifndef elapsed_timer_h
 #define elapsed_timer_h
 
+#include <atomic>
 #include <chrono>
 #include <mutex>
 using namespace std::chrono_literals;
@@ -47,21 +48,38 @@ public:
     using time_point = typename ClockType::time_point;
 
     //! constructor
-    //! @details constructs and starts timer
     elapsed_timer( )
         : start_time_( ClockType::now() )
     {
     }
 
     //! copy constructor
-    elapsed_timer( elapsed_timer<ClockType>& other ) noexcept = default;
+    explicit elapsed_timer( elapsed_timer& other ) noexcept
+        : start_time_( other.start_time_.load() )
+    {
+    }
 
     //! move constructor
-    elapsed_timer( elapsed_timer<ClockType>&& other ) noexcept = default;
+    explicit elapsed_timer( elapsed_timer&& other ) noexcept
+        : start_time_( other.start_time_.load() )
+    {
+    }
 
-    elapsed_timer<ClockType>& operator=( elapsed_timer<ClockType>& rhs ) noexcept = default;
+    //! copy assignment
+    elapsed_timer& operator=( elapsed_timer& rhs ) noexcept
+    {
+        start_time_ = rhs.start_time_.load();
+        return *this;
+    }
 
-    elapsed_timer<ClockType>& operator=( elapsed_timer<ClockType>&& rhs ) noexcept = default;
+    //! move assignment
+    elapsed_timer& operator=( elapsed_timer&& rhs ) noexcept
+    {
+        start_time_ = rhs.start_time_.load();
+        return *this;
+    }
+
+    ~elapsed_timer( ) = default;
 
     //! is timer running
     constexpr bool is_running( ) const
@@ -80,11 +98,12 @@ public:
     template<typename T = duration>
     T value( )
     {
-        return std::chrono::duration_cast<T>( ClockType::now() - start_time_ );
+        duration elapsed = ClockType::now() - start_time_.load();
+        return std::chrono::duration_cast<T>( elapsed );
     }
 
 private:
-    time_point start_time_;
+    std::atomic<time_point> start_time_;
 };
 
 }
