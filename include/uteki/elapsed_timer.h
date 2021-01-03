@@ -34,8 +34,7 @@ namespace uteki
 {
 
 //! elapsed timer
-//! @details  Timer starts when constructed and is always running.
-//!     Timer can be restarted.
+//! @details  Timer is always running. Timer can be restarted.
 template< class ClockType = std::chrono::steady_clock >
 class elapsed_timer
 {
@@ -65,6 +64,8 @@ public:
     {
     }
 
+    ~elapsed_timer( ) = default;
+
     //! copy assignment
     elapsed_timer& operator=( elapsed_timer& rhs ) noexcept
     {
@@ -78,8 +79,6 @@ public:
         start_time_ = rhs.start_time_.load();
         return *this;
     }
-
-    ~elapsed_timer( ) = default;
 
     //! is timer running
     constexpr bool is_running( ) const

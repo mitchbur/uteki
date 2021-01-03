@@ -33,7 +33,6 @@ namespace uteki
 {
 
 //! stopwatch  timer class
-//! @details  Enhanced elapsed_timer that can be started, stopped and reset.
 template< class ClockType = std::chrono::steady_clock >
 class stopwatch_timer
 {
@@ -46,16 +45,26 @@ public:
     using time_point = typename ClockType::time_point;
 
     //! constructor
-    //! @details constructs and starts timer
+    //! @details constructs and starts timer. For the default constructor the
+    //! timer is started to be consistent with the `elapsed_timer`.
     stopwatch_timer( )
-    :lock_( )
+        : lock_( )
         , running_( true )
         , start_time_( ClockType::now() )
         , accumulated_( duration::zero() )
     {}
 
+    //! constructor
+    //!  @param  start    initial running state
+    stopwatch_timer( bool start )
+        :lock_( )
+        , running_( start )
+        , start_time_( ClockType::now() )
+        , accumulated_( duration::zero() )
+    {}
+
     //! copy constructor
-    stopwatch_timer( stopwatch_timer<ClockType>& other ) noexcept
+    explicit stopwatch_timer( stopwatch_timer& other ) noexcept
         : lock_( )
     {
         other.lock_.lock();
@@ -66,7 +75,7 @@ public:
     }
 
 	//! move constructor
-    stopwatch_timer( stopwatch_timer<ClockType>&& other ) noexcept
+    explicit stopwatch_timer( stopwatch_timer&& other ) noexcept
         : lock_( )
         , running_( false )
         , start_time_( time_point::min() )
@@ -79,7 +88,10 @@ public:
         other.lock_.unlock();
     }
 
-    stopwatch_timer<ClockType>& operator=( stopwatch_timer<ClockType>& rhs ) noexcept
+    ~stopwatch_timer( ) = default;
+
+    //! copy assignment
+    stopwatch_timer& operator=( stopwatch_timer& rhs ) noexcept
     {
         rhs.lock_.lock();
         auto rhs_running = rhs.running_;
@@ -96,7 +108,8 @@ public:
         return *this;
     }
 
-    stopwatch_timer<ClockType>& operator=( stopwatch_timer<ClockType>&& rhs ) noexcept
+    //! move assignment
+    stopwatch_timer& operator=( stopwatch_timer&& rhs ) noexcept
     {
         rhs.lock_.lock();
         auto rhs_running = rhs.running_;
@@ -134,7 +147,7 @@ public:
     {
         lock_.lock();
         running_ = false;
-        start_time_ = time_point::min();
+        start_time_ = ClockType::now();
         accumulated_ = duration::zero();
         lock_.unlock();
     }
@@ -155,7 +168,7 @@ public:
     void stop( )
     {
         lock_.lock();
-        if( running_ )
+        if ( running_ )
         {
             auto stop_time = ClockType::now();
             running_ = false;
@@ -164,7 +177,7 @@ public:
         lock_.unlock();
     }
 
-    //! get duration of timer running
+    //! get elapsed time
     //! @returns  duration of timer running
     template<typename T = duration>
     T value( )
