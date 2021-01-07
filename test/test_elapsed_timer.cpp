@@ -225,33 +225,50 @@ TEST_F( Test_elapsed_timer, construction_highres )
 
 TEST_F( Test_elapsed_timer, restart )
 {
-    using timer_type_dc = uteki::elapsed_timer<>;
+    //! [restart elapsed_timer example]
 
-    timer_type_dc my_timer;
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include "uteki/elapsed_timer.h"
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_large = 77 * duration_tolerance;
+
+    uteki::elapsed_timer<> my_timer;
     EXPECT_TRUE( my_timer.is_running() );
 
     std::this_thread::sleep_for( sleep_duration_large );
-    decltype(sleep_duration_large) elapsed_1 = my_timer.value();
+    decltype(sleep_duration_large) elapsed_1_observed = my_timer.value();
 
     my_timer.restart();
     EXPECT_TRUE( my_timer.is_running() );
 
     std::this_thread::sleep_for( sleep_duration_small );
-    decltype(sleep_duration_large) elapsed_2 = my_timer.value();
+    decltype(sleep_duration_small) elapsed_2_observed = my_timer.value();
 
-    auto expected_elapsed_1 = sleep_duration_large;
-    EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), duration_tolerance.count() );
-    auto expected_elapsed_2 = sleep_duration_small;
-    EXPECT_NEAR( elapsed_2.count(), expected_elapsed_2.count(), duration_tolerance.count() );
+    auto elapsed_1_expected = sleep_duration_large;
+    EXPECT_NEAR( elapsed_1_observed.count(), elapsed_1_expected.count(),
+                duration_tolerance.count() );
+    auto elapsed_2_expected = sleep_duration_small;
+    EXPECT_NEAR( elapsed_2_observed.count(), elapsed_2_expected.count(),
+                duration_tolerance.count() );
+
+    //! [restart elapsed_timer example]
 }
 
 TEST_F( Test_elapsed_timer, timing )
 {
+    //! [value elapsed_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include "uteki/elapsed_timer.h"
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_xs = 20 * duration_tolerance;
+
     using timer_type_tm = uteki::elapsed_timer<>;
-    {
-        timer_type_tm::period clk_period;
-        std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
-    }
 
     timer_type_tm my_timer;
     EXPECT_TRUE( my_timer.is_running() );
@@ -265,5 +282,12 @@ TEST_F( Test_elapsed_timer, timing )
         auto val_diff = std::chrono::duration_cast< std::chrono::duration<double> >( curr_val - prev_val );
         prev_val = curr_val;
         EXPECT_NEAR( val_diff.count(), sleep_duration_xs.count(), duration_tolerance.count() );
+    }
+
+    //! [value elapsed_timer example]
+
+    {
+        timer_type_tm::period clk_period;
+        std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
     }
 }

@@ -28,7 +28,6 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
-using namespace std::chrono_literals;
 
 namespace uteki
 {
@@ -41,9 +40,13 @@ class elapsed_timer
 	static_assert( ClockType::is_steady, "must use steady clock type" );
 
 public:
+    //! scalar type for duration tick count
     using rep = typename ClockType::rep;
+    //! `std::ratio` type for duration tick period, in seconds
     using period = typename ClockType::period;
+    //! `std::chrono::duration<rep, period>` type represents a duration
     using duration = typename ClockType::duration;
+    //! reference clock type's `time_point` type, represents a point in time
     using time_point = typename ClockType::time_point;
 
     //! constructor
@@ -64,6 +67,7 @@ public:
     {
     }
 
+    //! destructor
     ~elapsed_timer( ) = default;
 
     //! copy assignment
@@ -81,19 +85,24 @@ public:
     }
 
     //! is timer running
+    //! @returns  `true`
     constexpr bool is_running( ) const
     {
         return true;
     }
 
     //! restart timer
+    //!
+    //!  \snippet  test_elapsed_timer.cpp restart elapsed_timer example
     void restart( )
     {
         start_time_ = ClockType::now();
     }
 
-    //! get duration of timer running
+    //! get timer value
     //! @returns  duration of timer running
+    //!
+    //!  \snippet test_elapsed_timer.cpp value elapsed_timer example
     template<typename T = duration>
     T value( )
     {
