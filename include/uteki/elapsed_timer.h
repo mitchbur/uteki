@@ -27,7 +27,6 @@
 
 #include <atomic>
 #include <chrono>
-#include <mutex>
 
 namespace uteki
 {

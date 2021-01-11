@@ -246,6 +246,17 @@ TEST_F( Test_stopwatch_timer, construction_highres )
 
 TEST_F( Test_stopwatch_timer, restart )
 {
+    //! [restart stopwatch_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include "uteki/stopwatch_timer.h"
+    // #include <thread>
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_large = 77 * duration_tolerance;
+
     using timer_type_dc = uteki::stopwatch_timer<>;
 
     timer_type_dc my_timer;
@@ -264,15 +275,22 @@ TEST_F( Test_stopwatch_timer, restart )
     EXPECT_NEAR( elapsed_1.count(), expected_elapsed_1.count(), duration_tolerance.count() );
     auto expected_elapsed_2 = sleep_duration_small;
     EXPECT_NEAR( elapsed_2.count(), expected_elapsed_2.count(), duration_tolerance.count() );
+
+    //! [restart stopwatch_timer example]
 }
 
 TEST_F( Test_stopwatch_timer, timing )
 {
+    //! [value stopwatch_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include <thread>
+    // #include "uteki/stopwatch_timer.h"
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_xs = 20 * duration_tolerance;
     using timer_type_tm = uteki::stopwatch_timer<>;
-    {
-        timer_type_tm::period clk_period;
-        std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
-    }
 
     timer_type_tm my_timer;
     EXPECT_TRUE( my_timer.is_running() );
@@ -286,6 +304,12 @@ TEST_F( Test_stopwatch_timer, timing )
         auto val_diff = std::chrono::duration_cast< std::chrono::duration<double> >( curr_val - prev_val );
         prev_val = curr_val;
         EXPECT_NEAR( val_diff.count(), sleep_duration_xs.count(), duration_tolerance.count() );
+    }
+
+    //! [value stopwatch_timer example]
+    {
+        timer_type_tm::period clk_period;
+        std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
     }
 }
 
@@ -324,6 +348,17 @@ TEST_F( Test_stopwatch_timer, stop_start )
 
 TEST_F( Test_stopwatch_timer, start_stop )
 {
+    //! [start_stop stopwatch_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include <thread>
+    // #include "uteki/stopwatch_timer.h"
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_xs = 20 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_medium = 48 * duration_tolerance;
     using timer_type_dc = uteki::stopwatch_timer<>;
 
     timer_type_dc my_timer;
@@ -355,10 +390,23 @@ TEST_F( Test_stopwatch_timer, start_stop )
     EXPECT_NEAR( elapsed_1.count(), elapsed_after_stop.count(), duration_tolerance.count() );
 
     EXPECT_EQ( elapsed_after_stop.count(), elapsed_after_stop2.count() );
+
+    //! [start_stop stopwatch_timer example]
 }
 
 TEST_F( Test_stopwatch_timer, reset )
 {
+    //! [reset_start stopwatch_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include <thread>
+    // #include "uteki/stopwatch_timer.h"
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_xs = 20 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+    // static constexpr std::chrono::duration<double> sleep_duration_medium = 48 * duration_tolerance;
     using timer_type_dc = uteki::stopwatch_timer<>;
 
     timer_type_dc my_timer;
@@ -388,4 +436,6 @@ TEST_F( Test_stopwatch_timer, reset )
 
     auto expected_elapsed_4 = sleep_duration_xs;
     EXPECT_NEAR( elapsed_4.count(), expected_elapsed_4.count(), duration_tolerance.count() );
+
+    //! [reset_start stopwatch_timer example]
 }

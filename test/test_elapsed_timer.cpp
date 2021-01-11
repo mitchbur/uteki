@@ -230,6 +230,7 @@ TEST_F( Test_elapsed_timer, restart )
     // #include <chrono>
     // using namespace std::chrono_literals;
     // #include "uteki/elapsed_timer.h"
+    // #include <thread>
     //
     // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
     // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
@@ -264,6 +265,7 @@ TEST_F( Test_elapsed_timer, timing )
     // #include <chrono>
     // using namespace std::chrono_literals;
     // #include "uteki/elapsed_timer.h"
+    // #include <thread>
     //
     // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
     // static constexpr std::chrono::duration<double> sleep_duration_xs = 20 * duration_tolerance;

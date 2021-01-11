@@ -27,21 +27,26 @@
 
 #include <chrono>
 #include <mutex>
-using namespace std::chrono_literals;
 
 namespace uteki
 {
 
 //! stopwatch  timer class
+//! @tparam ClockType  `std::chrono` clock type used for timing. This must be a steady clock type.
+//! @details Similar to `elapsed_timer` class but with start and stop features.
 template< class ClockType = std::chrono::steady_clock >
 class stopwatch_timer
 {
 	static_assert( ClockType::is_steady, "must use steady clock type" );
 
 public:
+    //! scalar type for duration tick count
     using rep = typename ClockType::rep;
+    //! `std::ratio` type for duration tick period, in seconds
     using period = typename ClockType::period;
+    //! `std::chrono::duration<rep, period>` type representation of duration
     using duration = typename ClockType::duration;
+    //! reference clock type's `time_point` type, represents a point in time
     using time_point = typename ClockType::time_point;
 
     //! constructor
@@ -133,6 +138,8 @@ public:
     }
 
     //! restart timer
+    //!
+    //!  \snippet test_stopwatch_timer.cpp restart stopwatch_timer example
     void restart( )
     {
         lock_.lock();
@@ -143,6 +150,8 @@ public:
     }
 
     //! reset timer
+    //!
+    //!  \snippet test_stopwatch_timer.cpp reset_start stopwatch_timer example
     void reset( )
     {
         lock_.lock();
@@ -153,6 +162,8 @@ public:
     }
 
     //! start timer
+    //!
+    //!  \snippet test_stopwatch_timer.cpp reset_start stopwatch_timer example
     void start( )
     {
         lock_.lock();
@@ -165,6 +176,8 @@ public:
     }
 
     //! stop timer
+    //!
+    //!  \snippet test_stopwatch_timer.cpp start_stop stopwatch_timer example
     void stop( )
     {
         lock_.lock();
@@ -179,6 +192,8 @@ public:
 
     //! get elapsed time
     //! @returns  duration of timer running
+    //!
+    //!  \snippet test_stopwatch_timer.cpp value stopwatch_timer example
     template<typename T = duration>
     T value( )
     {
