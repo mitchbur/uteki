@@ -40,6 +40,6 @@ namespace uteki
 {
 
 #define UTEKI_VERSION_MAJOR  0
-#define UTEKI_VERSION_MINOR  1
+#define UTEKI_VERSION_MINOR  2
 
 }

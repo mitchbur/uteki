@@ -287,9 +287,63 @@ TEST_F( Test_elapsed_timer, timing )
     }
 
     //! [value elapsed_timer example]
+}
 
-    {
-        timer_type_tm::period clk_period;
-        std::cout << "clock period: " << clk_period.num << "/" << clk_period.den << "\n";
-    }
+TEST_F( Test_elapsed_timer, comparison )
+{
+    //! [comparison elapsed_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include "uteki/elapsed_timer.h"
+    // #include <thread>
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+
+    using timer_type_cmp = uteki::elapsed_timer<>;
+
+    timer_type_cmp timer_a;
+    EXPECT_TRUE( timer_a.is_running() );
+
+    timer_type_cmp timer_b( timer_a );
+    EXPECT_TRUE( timer_b.is_running() );
+
+    std::this_thread::sleep_for( sleep_duration_small );
+
+    timer_type_cmp timer_c;
+    EXPECT_TRUE( timer_c.is_running() );
+
+    //  timer_a == timer_b > timer_c
+    EXPECT_TRUE( timer_a == timer_b );
+    EXPECT_TRUE( timer_a != timer_c );
+    EXPECT_TRUE( timer_b > timer_c );
+    EXPECT_TRUE( timer_c < timer_b );
+    EXPECT_TRUE( timer_b >= timer_c );
+    EXPECT_TRUE( timer_c <= timer_b );
+
+    //! [comparison elapsed_timer example]
+
+    EXPECT_TRUE( timer_a == timer_a );
+    EXPECT_TRUE( timer_b == timer_a );
+    EXPECT_TRUE( timer_b == timer_b );
+    EXPECT_TRUE( timer_c == timer_c );
+    EXPECT_TRUE( timer_a != timer_c );
+    EXPECT_TRUE( timer_b != timer_c );
+    EXPECT_TRUE( timer_c != timer_a );
+    EXPECT_TRUE( timer_c != timer_b );
+    EXPECT_TRUE( timer_c < timer_a );
+    EXPECT_TRUE( timer_a <= timer_a );
+    EXPECT_TRUE( timer_a <= timer_b );
+    EXPECT_TRUE( timer_b <= timer_a );
+    EXPECT_TRUE( timer_b <= timer_b );
+    EXPECT_TRUE( timer_c <= timer_a );
+    EXPECT_TRUE( timer_c <= timer_c );
+    EXPECT_TRUE( timer_a > timer_c );
+    EXPECT_TRUE( timer_a >= timer_a );
+    EXPECT_TRUE( timer_a >= timer_b );
+    EXPECT_TRUE( timer_a >= timer_c );
+    EXPECT_TRUE( timer_b >= timer_a );
+    EXPECT_TRUE( timer_b >= timer_b );
+    EXPECT_TRUE( timer_c >= timer_c );
 }

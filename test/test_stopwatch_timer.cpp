@@ -439,3 +439,62 @@ TEST_F( Test_stopwatch_timer, reset )
 
     //! [reset_start stopwatch_timer example]
 }
+
+TEST_F( Test_stopwatch_timer, comparison )
+{
+    //! [comparison stopwatch_timer example]
+
+    // #include <chrono>
+    // using namespace std::chrono_literals;
+    // #include "uteki/elapsed_timer.h"
+    // #include <thread>
+    //
+    // static constexpr std::chrono::duration<double> duration_tolerance = 6ms;
+    // static constexpr std::chrono::duration<double> sleep_duration_small = 32 * duration_tolerance;
+
+    using timer_type_cmp = uteki::stopwatch_timer<>;
+
+    timer_type_cmp timer_a;
+    EXPECT_TRUE( timer_a.is_running() );
+
+    timer_type_cmp timer_b( timer_a );
+    EXPECT_TRUE( timer_b.is_running() );
+
+    std::this_thread::sleep_for( sleep_duration_small );
+
+    timer_type_cmp timer_c;
+    EXPECT_TRUE( timer_c.is_running() );
+
+    //  timer_a == timer_b > timer_c
+    EXPECT_TRUE( timer_a == timer_b );
+    EXPECT_TRUE( timer_a != timer_c );
+    EXPECT_TRUE( timer_b > timer_c );
+    EXPECT_TRUE( timer_c < timer_b );
+    EXPECT_TRUE( timer_b >= timer_c );
+    EXPECT_TRUE( timer_c <= timer_b );
+
+    //! [comparison stopwatch_timer example]
+
+    EXPECT_TRUE( timer_a == timer_a );
+    EXPECT_TRUE( timer_b == timer_a );
+    EXPECT_TRUE( timer_b == timer_b );
+    EXPECT_TRUE( timer_c == timer_c );
+    EXPECT_TRUE( timer_a != timer_c );
+    EXPECT_TRUE( timer_b != timer_c );
+    EXPECT_TRUE( timer_c != timer_a );
+    EXPECT_TRUE( timer_c != timer_b );
+    EXPECT_TRUE( timer_c < timer_a );
+    EXPECT_TRUE( timer_a <= timer_a );
+    EXPECT_TRUE( timer_a <= timer_b );
+    EXPECT_TRUE( timer_b <= timer_a );
+    EXPECT_TRUE( timer_b <= timer_b );
+    EXPECT_TRUE( timer_c <= timer_a );
+    EXPECT_TRUE( timer_c <= timer_c );
+    EXPECT_TRUE( timer_a > timer_c );
+    EXPECT_TRUE( timer_a >= timer_a );
+    EXPECT_TRUE( timer_a >= timer_b );
+    EXPECT_TRUE( timer_a >= timer_c );
+    EXPECT_TRUE( timer_b >= timer_a );
+    EXPECT_TRUE( timer_b >= timer_b );
+    EXPECT_TRUE( timer_c >= timer_c );
+}

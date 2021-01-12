@@ -197,26 +197,130 @@ public:
     template<typename T = duration>
     T value( )
     {
-        T result;
-        lock_.lock();
-        if ( running_ )
-        {
-            result = std::chrono::duration_cast<T>( ( ClockType::now() - start_time_ ) + accumulated_ );
-        }
-        else
-        {
-            result = std::chrono::duration_cast<T>( accumulated_ );
-        }
-        lock_.unlock();
-        return result;
+        auto time_now = ClockType::now();
+        duration elapsed = calculate_elapsed( time_now );
+        return std::chrono::duration_cast<T>( elapsed );
     }
+
+    template< class U >
+    friend bool operator==( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
+    template< class U >
+    friend bool operator!=( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
+    template< class U >
+    friend bool operator<( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
+    template< class U >
+    friend bool operator<=( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
+    template< class U >
+    friend bool operator>( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
+    template< class U >
+    friend bool operator>=( stopwatch_timer<U>& lhs, stopwatch_timer<U>& rhs );
 
 private:
     std::mutex lock_;
     bool running_;
     time_point start_time_;
     duration accumulated_;
+
+    inline duration calculate_elapsed( time_point& reftime )
+    {
+        duration result;
+        lock_.lock();
+        if ( running_ )
+        {
+            result = ( reftime - start_time_ ) + accumulated_;
+        }
+        else
+        {
+            result = accumulated_;
+        }
+        lock_.unlock();
+        return result;
+    }
 };
+
+//! compare if `lhs` elapsed time is equal to `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time eqauls `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator==( stopwatch_timer<ClockType>& lhs,
+                 stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) == rhs.calculate_elapsed( time_now );
+}
+
+//! compare if `lhs` elapsed time is not equal to `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time does not eqaul `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator!=( stopwatch_timer<ClockType>& lhs,
+                 stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) != rhs.calculate_elapsed( time_now );
+}
+
+//! compare if `lhs` elapsed time is less than `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time is less than `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator<( stopwatch_timer<ClockType>& lhs,
+                stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) < rhs.calculate_elapsed( time_now );
+}
+
+//! compare if `lhs` elapsed time is less than or equal to `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time is less than or equal to `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator<=( stopwatch_timer<ClockType>& lhs,
+                 stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) <= rhs.calculate_elapsed( time_now );
+}
+
+//! compare if `lhs` elapsed time is greater than `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time is greater than `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator>( stopwatch_timer<ClockType>& lhs,
+                stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) > rhs.calculate_elapsed( time_now );
+}
+
+//! compare if `lhs` elapsed time is greater than or equal to `rhs` elapsed time
+//! @param lhs lef-hand side argument
+//! @param rhs right-hand side argument
+//! @returns  `true` only if `lhs` elapsed time is greater than or equal to  `rhs` elapsed time
+//!
+//!  \snippet test_stopwatch_timer.cpp comparison stopwatch_timer example
+template < class ClockType >
+bool operator>=( stopwatch_timer<ClockType>& lhs,
+                 stopwatch_timer<ClockType>& rhs )
+{
+    auto time_now = ClockType::now( );
+    return lhs.calculate_elapsed( time_now ) >= rhs.calculate_elapsed( time_now );
+}
 
 }
 
